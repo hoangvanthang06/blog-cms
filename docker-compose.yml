@@ -1,0 +1,210 @@
+# ==============================================================================
+# HỆ THỐNG BLOG / CMS - ĐỀ TÀI KẾT THÚC HỌC PHẦN
+# Môn: Triển khai và Quản trị Hệ thống Phần mềm
+# Sinh viên: Hoàng Văn Thắng - Mã sinh viên: DTC245200517
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. DATABASE: MySQL 8.0 (Cơ sở dữ liệu quan hệ)
+  # ----------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: blog_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPassword@2025
+      MYSQL_DATABASE: blog_cms
+      MYSQL_USER: blog_user
+      MYSQL_PASSWORD: BlogPass@2025
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - blog_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "blog_user", "-pBlogPass@2025"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # 2. PHPMYADMIN (Quản trị CSDL MySQL trực quan qua Web)
+  # ----------------------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: blog_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: RootPassword@2025
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8080:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 3. APPLICATION: Blog / CMS Web App (Node.js Express + EJS)
+  # ----------------------------------------------------------------------------
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: blog_app
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: blog_user
+      DB_PASSWORD: BlogPass@2025
+      DB_NAME: blog_cms
+      SESSION_SECRET: Thang_DTC245200517_SuperSecretKey!
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 4. REVERSE PROXY: Nginx (Hardening, Rate Limiting, Security Headers)
+  # ----------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: blog_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app
+      - phpmyadmin
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 5. METRICS COLLECTOR: Prometheus Server
+  # ----------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: blog_prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 6. LOG MANAGEMENT: Grafana Loki
+  # ----------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: blog_loki
+    restart: always
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 7. LOG SHIPPER: Promtail
+  # ----------------------------------------------------------------------------
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: blog_promtail
+    restart: always
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - nginx_logs:/var/log/nginx:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 8. VISUALIZATION: Grafana Dashboard
+  # ----------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: blog_grafana
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - blog_network
+
+  # ----------------------------------------------------------------------------
+  # 9. EXPORTERS (Phục vụ Prometheus Scraper)
+  # ----------------------------------------------------------------------------
+  mysqld_exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: blog_mysql_exporter
+    restart: always
+    environment:
+      DATA_SOURCE_NAME: "blog_user:BlogPass@2025@(mysql:3306)/blog_cms"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - blog_network
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:1.1.0
+    container_name: blog_nginx_exporter
+    restart: always
+    command:
+      - -nginx.scrape-uri=http://nginx:80/stub_status
+    depends_on:
+      - nginx
+    networks:
+      - blog_network
+
+networks:
+  blog_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  nginx_logs:
+  prometheus_data:
+  grafana_data:
+  loki_data:

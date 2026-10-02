@@ -1,0 +1,118 @@
+<%- include('../layouts/header') %>
+
+<div class="container" style="margin-top: 32px; margin-bottom: 48px;">
+  <!-- Admin Header Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-heading);">Bảng Điều Khiển Quản Trị (CMS)</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Chào mừng quay trở lại, <strong><%= user.full_name %></strong> (<%= user.role %>)</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="/admin/posts/new" class="btn btn-primary">+ Viết bài mới</a>
+      <a href="/admin/categories" class="btn btn-secondary">Chuyên mục</a>
+      <a href="/admin/comments" class="btn btn-secondary">Bình luận</a>
+    </div>
+  </div>
+
+  <!-- Thẻ Thống kê -->
+  <div class="admin-grid">
+    <div class="stat-card">
+      <div class="stat-label">Tổng bài viết</div>
+      <div class="stat-number"><%= stats.totalPosts %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Tổng lượt xem</div>
+      <div class="stat-number" style="color: var(--secondary);"><%= stats.totalViews %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Chuyên mục</div>
+      <div class="stat-number" style="color: var(--accent);"><%= stats.totalCategories %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Bình luận</div>
+      <div class="stat-number" style="color: #10b981;"><%= stats.totalComments %></div>
+    </div>
+  </div>
+
+  <!-- Bảng bài viết gần đây -->
+  <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--text-heading);">Bài viết xuất bản gần đây</h2>
+      <a href="/admin/posts" style="font-size: 0.85rem; font-weight: 600;">Xem tất cả bài viết →</a>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Tiêu đề bài viết</th>
+            <th>Chuyên mục</th>
+            <th>Trạng thái</th>
+            <th>Lượt xem</th>
+            <th>Ngày tạo</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentPosts.forEach(post => { %>
+            <tr>
+              <td><strong><a href="/bai-viet/<%= post.slug %>" target="_blank"><%= post.title %></a></strong></td>
+              <td><%= post.category_name %></td>
+              <td>
+                <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: <%= post.status === 'published' ? '#dcfce7; color: #166534;' : '#fef3c7; color: #92400e;' %>">
+                  <%= post.status === 'published' ? 'Đã xuất bản' : 'Bản nháp' %>
+                </span>
+              </td>
+              <td><%= post.views %></td>
+              <td><%= new Date(post.created_at).toLocaleDateString('vi-VN') %></td>
+              <td>
+                <a href="/admin/posts/edit/<%= post.id %>" class="btn btn-secondary btn-sm">Sửa</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bình luận mới -->
+  <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--text-heading);">Bình luận mới nhất</h2>
+      <a href="/admin/comments" style="font-size: 0.85rem; font-weight: 600;">Quản lý bình luận →</a>
+    </div>
+    <% if (recentComments.length === 0) { %>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Chưa có bình luận nào.</p>
+    <% } else { %>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Người gửi</th>
+              <th>Nội dung</th>
+              <th>Bài viết</th>
+              <th>Thời gian</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentComments.forEach(c => { %>
+              <tr>
+                <td><strong><%= c.author_name %></strong></td>
+                <td><%= c.content %></td>
+                <td><a href="/bai-viet/<%= c.post_slug %>" target="_blank"><%= c.post_title %></a></td>
+                <td><%= new Date(c.created_at).toLocaleString('vi-VN') %></td>
+                <td>
+                  <span style="font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: #dcfce7; color: #166534;">
+                    <%= c.status %>
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

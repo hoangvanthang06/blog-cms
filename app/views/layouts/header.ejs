@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <!-- Thanh điều hướng Header -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="logo-brand">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+          <path d="M6 6h10"/>
+          <path d="M6 10h10"/>
+        </svg>
+        TechBlog <span class="badge">CMS</span>
+      </a>
+
+      <!-- Tìm kiếm -->
+      <form action="/tim-kiem" method="GET" class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" name="q" placeholder="Tìm kiếm bài viết..." required>
+      </form>
+
+      <!-- Menu links -->
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link <%= currentPath === '/' ? 'active' : '' %>">Trang chủ</a></li>
+        <li><a href="/danh-muc/kien-truc-devops" class="nav-link">DevOps</a></li>
+        <li><a href="/danh-muc/he-thong-giam-sat" class="nav-link">Giám sát</a></li>
+        <li><a href="/danh-muc/bao-mat-he-thong" class="nav-link">Bảo mật</a></li>
+        
+        <% if (user) { %>
+          <li><a href="/admin" class="btn btn-primary btn-sm">CMS Dashboard</a></li>
+          <li><a href="/admin/logout" class="btn btn-secondary btn-sm">Đăng xuất</a></li>
+        <% } else { %>
+          <li><a href="/admin/login" class="btn btn-secondary btn-sm">Quản trị CMS</a></li>
+        <% } %>
+      </ul>
+    </div>
+  </header>

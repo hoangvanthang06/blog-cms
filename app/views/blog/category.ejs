@@ -1,0 +1,58 @@
+<%- include('../layouts/header') %>
+
+<div class="container" style="margin-top: 32px;">
+  <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 28px; margin-bottom: 32px;">
+    <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); text-transform: uppercase;">Chuyên mục</span>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-heading); margin: 6px 0 8px;"><%= category.name %></h1>
+    <p style="color: var(--text-muted);"><%= category.description || 'Các bài viết thuộc danh mục ' + category.name %></p>
+  </div>
+
+  <div class="main-layout">
+    <main>
+      <% if (posts.length === 0) { %>
+        <div style="background: white; padding: 40px; text-align: center; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <p style="color: var(--text-muted); font-size: 1.1rem;">Chưa có bài viết nào trong chuyên mục này.</p>
+          <a href="/" class="btn btn-primary btn-sm" style="margin-top: 14px;">Quay lại trang chủ</a>
+        </div>
+      <% } else { %>
+        <div class="posts-grid">
+          <% posts.forEach(post => { %>
+            <article class="card">
+              <div class="card-img-wrap">
+                <img src="<%= post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80' %>" alt="<%= post.title %>">
+                <span class="card-category-badge"><%= post.category_name %></span>
+              </div>
+              <div class="card-body">
+                <h3 class="card-title"><a href="/bai-viet/<%= post.slug %>"><%= post.title %></a></h3>
+                <p class="card-summary"><%= post.summary %></p>
+                <div class="card-footer">
+                  <div class="author-info">
+                    <img src="<%= post.author_avatar %>" alt="<%= post.author_name %>" class="author-avatar">
+                    <span><%= post.author_name %></span>
+                  </div>
+                  <div><span>👁️ <%= post.views %></span></div>
+                </div>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </main>
+
+    <aside>
+      <div class="sidebar-widget">
+        <h3 class="widget-title">Tất cả chuyên mục</h3>
+        <ul class="category-list">
+          <% categories.forEach(cat => { %>
+            <li class="category-item">
+              <a href="/danh-muc/<%= cat.slug %>" style="<%= cat.id === category.id ? 'font-weight: 700; color: var(--primary);' : '' %>"><%= cat.name %></a>
+              <span class="category-pill"><%= cat.post_count || 0 %></span>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>
