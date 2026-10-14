@@ -34,15 +34,20 @@
       <!-- Menu links -->
       <ul class="nav-links">
         <li><a href="/" class="nav-link <%= currentPath === '/' ? 'active' : '' %>">Trang chủ</a></li>
-        <li><a href="/danh-muc/kien-truc-devops" class="nav-link">DevOps</a></li>
-        <li><a href="/danh-muc/he-thong-giam-sat" class="nav-link">Giám sát</a></li>
-        <li><a href="/danh-muc/bao-mat-he-thong" class="nav-link">Bảo mật</a></li>
+        <li><a href="/danh-muc/kien-truc-he-thong" class="nav-link <%= currentPath === '/danh-muc/kien-truc-he-thong' ? 'active' : '' %>">Kiến trúc</a></li>
+        <li><a href="/danh-muc/devops-container" class="nav-link <%= currentPath === '/danh-muc/devops-container' ? 'active' : '' %>">DevOps</a></li>
+        <li><a href="/danh-muc/giam-sat-quan-tri-log" class="nav-link <%= currentPath === '/danh-muc/giam-sat-quan-tri-log' ? 'active' : '' %>">Giám sát</a></li>
+        <li><a href="/danh-muc/bao-mat-hardening" class="nav-link <%= currentPath === '/danh-muc/bao-mat-hardening' ? 'active' : '' %>">Bảo mật</a></li>
         
         <% if (user) { %>
+          <li style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.85rem; color: #475569; font-weight: 500;">Xin chào, <strong><%= user.full_name %></strong></span>
+          </li>
           <li><a href="/admin" class="btn btn-primary btn-sm">CMS Dashboard</a></li>
           <li><a href="/admin/logout" class="btn btn-secondary btn-sm">Đăng xuất</a></li>
         <% } else { %>
-          <li><a href="/admin/login" class="btn btn-secondary btn-sm">Quản trị CMS</a></li>
+          <li><a href="/admin/login" class="nav-link">Đăng nhập</a></li>
+          <li><a href="/admin/register" class="btn btn-primary btn-sm">Đăng ký</a></li>
         <% } %>
       </ul>
     </div>

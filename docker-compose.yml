@@ -1,14 +1,14 @@
 # ==============================================================================
-# HỆ THỐNG BLOG / CMS - ĐỀ TÀI KẾT THÚC HỌC PHẦN
-# Môn: Triển khai và Quản trị Hệ thống Phần mềm
-# Sinh viên: Hoàng Văn Thắng - Mã sinh viên: DTC245200517
+# HE THONG BLOG / CMS - DE TAI KET THUC HOC PHAN
+# Mon: Trien khai va Quan tri He thong Phan mem
+# Sinh vien: Hoang Van Thang - Ma sinh vien: DTC245200517
 # ==============================================================================
 
 version: '3.8'
 
 services:
   # ----------------------------------------------------------------------------
-  # 1. DATABASE: MySQL 8.0 (Cơ sở dữ liệu quan hệ)
+  # 1. DATABASE: MySQL 8.0 (Co so du lieu quan he)
   # ----------------------------------------------------------------------------
   mysql:
     image: mysql:8.0
@@ -33,7 +33,7 @@ services:
       retries: 5
 
   # ----------------------------------------------------------------------------
-  # 2. PHPMYADMIN (Quản trị CSDL MySQL trực quan qua Web)
+  # 2. PHPMYADMIN (Quan tri CSDL MySQL truc quan qua Web)
   # ----------------------------------------------------------------------------
   phpmyadmin:
     image: phpmyadmin:latest
@@ -173,14 +173,17 @@ services:
       - blog_network
 
   # ----------------------------------------------------------------------------
-  # 9. EXPORTERS (Phục vụ Prometheus Scraper)
+  # 9. EXPORTERS (Phuc vu Prometheus Scraper)
   # ----------------------------------------------------------------------------
   mysqld_exporter:
     image: prom/mysqld-exporter:v0.15.1
     container_name: blog_mysql_exporter
     restart: always
+    command:
+      - --mysqld.address=mysql:3306
+      - --mysqld.username=blog_user
     environment:
-      DATA_SOURCE_NAME: "blog_user:BlogPass@2025@(mysql:3306)/blog_cms"
+      MYSQLD_EXPORTER_PASSWORD: BlogPass@2025
     depends_on:
       mysql:
         condition: service_healthy

@@ -67,11 +67,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;
   res.locals.currentYear = new Date().getFullYear();
-  res.locals.studentInfo = {
-    name: 'Hoàng Văn Thắng',
-    id: 'DTC245200517',
-    subject: 'Triển khai và Quản trị Hệ thống Phần mềm'
-  };
   next();
 });
 
@@ -104,6 +99,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Blog / CMS System đang chạy tại http://0.0.0.0:${PORT}`);
   console.log(`📊 Prometheus Metrics tại: http://localhost:${PORT}/metrics`);
   console.log(`🩺 Health Check tại: http://localhost:${PORT}/health`);
-  console.log(`👤 Sinh viên: Hoàng Văn Thắng - MSV: DTC245200517`);
   console.log(`========================================================`);
 });

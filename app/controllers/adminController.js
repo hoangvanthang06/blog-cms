@@ -9,8 +9,58 @@ const getLogin = (req, res) => {
   }
   res.render('admin/login', {
     title: 'Đăng nhập Quản trị viên CMS',
+    error: req.query.error || null,
+    success: req.query.success || null
+  });
+};
+
+// Giao diện Đăng ký
+const getRegister = (req, res) => {
+  if (req.session && req.session.user) {
+    return res.redirect('/admin');
+  }
+  res.render('admin/register', {
+    title: 'Đăng ký tài khoản - Blog CMS',
     error: req.query.error || null
   });
+};
+
+// Xử lý Đăng ký
+const postRegister = async (req, res) => {
+  try {
+    const { username, email, password, confirmPassword, full_name } = req.body;
+
+    if (!username || !email || !password) {
+      return res.redirect('/admin/register?error=' + encodeURIComponent('Vui lòng nhập đầy đủ thông tin'));
+    }
+
+    if (password !== confirmPassword) {
+      return res.redirect('/admin/register?error=' + encodeURIComponent('Mật khẩu xác nhận không khớp'));
+    }
+
+    const [existing] = await db.query(
+      `SELECT * FROM users WHERE username = ? OR email = ?`,
+      [username.trim(), email.trim()]
+    );
+
+    if (existing && existing.length > 0) {
+      return res.redirect('/admin/register?error=' + encodeURIComponent('Tài khoản hoặc Email đã tồn tại trong hệ thống'));
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const defaultAvatar = `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80`;
+
+    await db.query(
+      `INSERT INTO users (username, email, password, full_name, role, avatar) VALUES (?, ?, ?, ?, ?, ?)`,
+      [username.trim(), email.trim(), hashedPassword, full_name ? full_name.trim() : username.trim(), 'reader', defaultAvatar]
+    );
+
+    console.log(`[Admin] Người dùng mới '${username}' đã đăng ký thành công.`);
+    res.redirect('/admin/login?success=' + encodeURIComponent('Đăng ký tài khoản thành công! Vui lòng đăng nhập để tiếp tục.'));
+  } catch (error) {
+    console.error('[AdminController] postRegister Error:', error);
+    res.redirect('/admin/register?error=' + encodeURIComponent('Lỗi hệ thống khi tạo tài khoản'));
+  }
 };
 
 // Xử lý Đăng nhập
@@ -344,6 +394,8 @@ const getUsers = async (req, res) => {
 module.exports = {
   getLogin,
   postLogin,
+  getRegister,
+  postRegister,
   logout,
   getDashboard,
   getPosts,

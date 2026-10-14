@@ -1,6 +1,6 @@
 # ==============================================================
 # PROMETHEUS CONFIGURATION
-# Giám sát Hệ thống Blog / CMS - Hoàng Văn Thắng DTC245200517
+# Giam sat He thong Blog / CMS - Hoang Van Thang DTC245200517
 # ==============================================================
 
 global:
@@ -8,7 +8,7 @@ global:
   evaluation_interval: 5s
 
 scrape_configs:
-  # 1. Thu thập metrics từ ứng dụng Node.js Blog CMS
+  # 1. Thu thap metrics tu ung dung Node.js Blog CMS
   - job_name: 'blog_cms_app'
     metrics_path: '/metrics'
     static_configs:
@@ -17,21 +17,21 @@ scrape_configs:
           app: 'blog_cms'
           env: 'production'
 
-  # 2. Thu thập metrics từ máy chủ Nginx Reverse Proxy
+  # 2. Thu thap metrics tu may chu Nginx Reverse Proxy
   - job_name: 'nginx'
     static_configs:
       - targets: ['nginx_exporter:9113']
         labels:
           role: 'reverse_proxy'
 
-  # 3. Thu thập metrics từ CSDL MySQL
+  # 3. Thu thap metrics tu CSDL MySQL
   - job_name: 'mysql'
     static_configs:
       - targets: ['mysqld_exporter:9104']
         labels:
           db: 'mysql_primary'
 
-  # 4. Tự giám sát Prometheus
+  # 4. Tu giam sat Prometheus
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']

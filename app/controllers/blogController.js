@@ -142,7 +142,21 @@ const getPostBySlug = async (req, res) => {
 // Bài viết theo danh mục
 const getByCategory = async (req, res) => {
   try {
-    const { slug } = req.params;
+    let { slug } = req.params;
+
+    // Hỗ trợ alias các đường dẫn danh mục tương đương
+    const slugAliases = {
+      'kien-truc-devops': 'devops-container',
+      'he-thong-giam-sat': 'giam-sat-quan-tri-log',
+      'bao-mat-he-thong': 'bao-mat-hardening',
+      'devops': 'devops-container',
+      'giam-sat': 'giam-sat-quan-tri-log',
+      'bao-mat': 'bao-mat-hardening',
+      'kien-truc': 'kien-truc-he-thong'
+    };
+    if (slugAliases[slug]) {
+      slug = slugAliases[slug];
+    }
 
     const [categories] = await db.query('SELECT * FROM categories WHERE slug = ?', [slug]);
     if (categories.length === 0) {
